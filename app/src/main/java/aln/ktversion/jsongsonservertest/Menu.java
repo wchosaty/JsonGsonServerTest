@@ -4,13 +4,13 @@ public class Menu {
     private String name;
     private String kind;
     private double price;
-    private double workLifeTime;
+    private double workTime;
 
-    public Menu(String name, String kind, double price, double workLifeTime) {
+    public Menu(String name, String kind, double price, double workTime) {
         this.name = name;
         this.kind = kind;
         this.price = price;
-        this.workLifeTime = workLifeTime;
+        this.workTime = workTime;
     }
 
     public String getName() {
@@ -37,11 +37,11 @@ public class Menu {
         this.price = price;
     }
 
-    public double getWorkLifeTime() {
-        return workLifeTime;
+    public double getWorkTime() {
+        return workTime;
     }
 
-    public void setWorkLifeTime(double workLifeTime) {
-        this.workLifeTime = workLifeTime;
+    public void setWorkTime(double workTime) {
+        this.workTime = workTime;
     }
 }
