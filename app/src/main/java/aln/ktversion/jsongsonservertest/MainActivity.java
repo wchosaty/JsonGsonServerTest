@@ -3,37 +3,23 @@ package aln.ktversion.jsongsonservertest;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Adapter;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "TAG MainActivity";
     private EditText etName,etAuthor,etPrice;
-    private Button btCreateNew,btSend;
+    private Button btCreateNew,btSend,btReceive;
     private TextView tvSend,tvReceive,tvMessage;
-    private Spinner spinner;
-    private List<String> infoList;
-    private List<Book> list;
-    private ArrayAdapter adapter;
-    private String itemName;
+    private List<String> sendList,receiveList;
+    private String tempString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,24 +33,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initial() {
-        list = new ArrayList<>();
-        infoList = new ArrayList<>();
-        infoList.add("json");infoList.add("gson");
-        adapter =new ArrayAdapter<>(this,R.layout.item_spinner,infoList);
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                TextView itemView = (TextView) view;
-                itemName = String.valueOf(itemView.getText());
-                LogHistory.d(TAG,"spinner :"+ itemName);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
+        sendList = new ArrayList<>();
+        receiveList = new ArrayList<>();
     }
 
     private void handleListener() {
@@ -75,31 +45,45 @@ public class MainActivity extends AppCompatActivity {
                 String name = etName.getText().toString().trim();
                 double price = Double.valueOf(etPrice.getText().toString().trim());
                 String author = etAuthor.getText().toString().trim();
-                Book book = new Book(name,price,author);
-                list.add( new Book(name,price,author) );
-                toGsonObject(book);
-
+                String tempString = new GsonString().fromGsonObject(new Book(name,price,author));
+                sendList.add( tempString );
                 LogHistory.d(TAG,"new book create Book:"+name);
+                LogHistory.d(TAG,"GsonBookString :"+tempString);
 //                toInitialEditText();
             }
         });
 
+        // Send List
         btSend.setOnClickListener(v -> {
-            LogHistory.d(TAG,"btSend");
-                    toGsonArray();
+            tempString = new GsonString().fromGsonArray(sendList);
+            LogHistory.d(TAG,"btSend"+tempString);
+            tvSend.setText(tempString);
+            String url = RemoteAccess.URL+"MyJsonGsonServlet";
+
+            String gsonString = RemoteAccess.getData(url,tempString);
+            Gson gson = new Gson();
+            Order order = gson.fromJson(gsonString,Order.class);
+            toTextMessage(tvReceive,order);
+        });
+
+        // Receive List
+        btReceive.setOnClickListener(v -> {
+            receiveList = new GsonString().toGsonArray(tempString);
+            for(String s : receiveList){
+                LogHistory.d(TAG,"btReceive :"+s);
+            }
         });
     }
 
-    private void toGsonObject(Book book) {
-        String gsonObjectString = new Gson().toJson(book);
-        LogHistory.d(TAG,"gsonObject :" + gsonObjectString);
-        tvSend.setText(gsonObjectString);
-    }
-
-    private void toGsonArray() {
-        String gsonString = new Gson().toJson(list);
-        LogHistory.d(TAG,"toGsonString :"+gsonString);
-        tvSend.setText(gsonString);
+    private void toTextMessage(TextView tvReceive, Order order) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("購買者 :"+order.getCustomerName())
+                .append("\n").append("金額 :"+order.getTotalPay());
+        for(int i=0;i<order.getOrderList().size();i++){
+            Book book = new Gson().fromJson(order.getOrderList().get(i),Book.class);
+            stringBuilder.append("book"+(i+1)+" :"+book.getName() +"\n");
+        }
+        tvReceive.setText(stringBuilder.toString());
     }
 
     private void toInitialEditText() {
@@ -124,10 +108,10 @@ public class MainActivity extends AppCompatActivity {
         etPrice = findViewById(R.id.etPrice);
         btCreateNew = findViewById(R.id.btCreateNew);
         btSend = findViewById(R.id.btSend);
+        btReceive = findViewById(R.id.btReceive);
         tvMessage = findViewById(R.id.tvMessage);
         tvReceive = findViewById(R.id.tvReceive);
         tvSend = findViewById(R.id.tvSend);
 
-        spinner = findViewById(R.id.spinner);
     }
 }
