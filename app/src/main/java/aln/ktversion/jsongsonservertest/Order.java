@@ -11,7 +11,41 @@ public class Order {
     private Integer payType;
     private Integer status;
     private List<String> OrderList;
+    private List<Book> books;
+    private Book book;
     private double totalPay;
+
+    public Order(String storeId, String orderId, String customerName, String phone, String address, Integer payType,
+                 Integer status, List<String> orderList, List<Book> books, Book book, double totalPay) {
+        super();
+        this.storeId = storeId;
+        this.orderId = orderId;
+        this.customerName = customerName;
+        this.phone = phone;
+        this.address = address;
+        this.payType = payType;
+        this.status = status;
+        OrderList = orderList;
+        this.books = books;
+        this.book = book;
+        this.totalPay = totalPay;
+    }
+
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
+    }
+
+    public Book getBook() {
+        return book;
+    }
+
+    public void setBook(Book book) {
+        this.book = book;
+    }
 
     public void getBookCalculatePay(){
         if(OrderList.size() > 0){
@@ -20,6 +54,14 @@ public class Order {
                 Book book = new GsonString().toGsonBook(s);
                 sum += book.getPrice();
             }
+            setTotalPay(sum);
+        }
+    }
+
+
+    public void getJsonBookPay() {
+        if(book != null) {
+            double sum = book.getPrice();
             setTotalPay(sum);
         }
     }
@@ -38,6 +80,7 @@ public class Order {
         OrderList = orderList;
         this.totalPay = totalPay;
     }
+
 
     public String getStoreId() {
         return storeId;

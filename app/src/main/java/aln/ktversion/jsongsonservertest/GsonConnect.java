@@ -1,5 +1,6 @@
 package aln.ktversion.jsongsonservertest;
 
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -7,7 +8,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 public class GsonConnect implements Callable<String> {
@@ -21,50 +21,48 @@ public class GsonConnect implements Callable<String> {
     }
 
     private String getData() {
-        HttpURLConnection httpURLConnection = null;
+        LogHistory.d(TAG,"getData :執行"+gsonString);
+        HttpURLConnection httpConnection = null;
         StringBuilder stringBuilder = new StringBuilder();
-
         try {
-            httpURLConnection = (HttpURLConnection) new URL(url).openConnection();
-            httpURLConnection.setDoInput(true);
-            httpURLConnection.setDoOutput(true);
-            httpURLConnection.setChunkedStreamingMode(0);
-            httpURLConnection.setUseCaches(false);
-            httpURLConnection.setRequestMethod("POST");
-            httpURLConnection.setRequestProperty("charset","UTF-8");
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(httpURLConnection.getOutputStream());
-            BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-
-            bufferedWriter.write(gsonString);
-            LogHistory.d(TAG,"OutGsonString :" + gsonString);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int responseCode = 0;
-        try {
-            responseCode = httpURLConnection.getResponseCode();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if(responseCode == 200) {
-            try (
-                    InputStreamReader inputStreamReader = new InputStreamReader(httpURLConnection.getInputStream());
-                    BufferedReader bfReader = new BufferedReader(inputStreamReader);
+            httpConnection = (HttpURLConnection) new URL(url).openConnection();
+            httpConnection.setDoInput(true);
+            httpConnection.setDoOutput(true);
+            httpConnection.setChunkedStreamingMode(0);
+            httpConnection.setUseCaches(false);
+            httpConnection.setRequestMethod("POST");
+//            httpConnection.setRequestProperty("content-type", "application/json");
+            httpConnection.setRequestProperty("charset", "UTF-8");
+            try(BufferedWriter bw =
+                            new BufferedWriter(new OutputStreamWriter(httpConnection.getOutputStream()))
             ) {
-                String line;
-                while ((line = bfReader.readLine()) != null) {
-                    stringBuilder.append(line);
+                LogHistory.d(TAG,"Gson Write :"+ gsonString);
+                bw.write(gsonString);
+            }
+            int responseCode = httpConnection.getResponseCode();
+            if(responseCode == 200) {
+                try(InputStreamReader isr =
+                            new InputStreamReader(httpConnection.getInputStream());
+                    BufferedReader br = new BufferedReader(isr);
+                ){
+                  String line;
+                  while (( line = br.readLine()) != null ){
+                      stringBuilder.append(line);
+                  }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }finally {
-                if(httpURLConnection != null){
-                    httpURLConnection.disconnect();
-                }
-                LogHistory.d(TAG,"response :"+stringBuilder.toString());
+            }else {
+                LogHistory.d(TAG, "responseCode: " + responseCode);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if(httpConnection != null){
+                httpConnection.disconnect();
             }
         }
+        LogHistory.d(TAG, "End: "+stringBuilder.toString());
         return stringBuilder.toString();
+
     }
 
     public GsonConnect( String url,String gsonString) {

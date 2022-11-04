@@ -1,13 +1,13 @@
 package aln.ktversion.jsongsonservertest;
 
-import java.time.temporal.Temporal;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 public class RemoteAccess {
     private final String TAG = "TAG RemoteAccess";
-    public static final String URL = "http://10.0.2.2:8080/MyJsonGsonServlet/";
+    // local Net test
+    public static final String URL = "http://10.0.2.2:8080/JsonGsonServlet/";
 
     public static String getData(String url, String outString){
         GsonConnect gsonConnect = new GsonConnect(url,outString);

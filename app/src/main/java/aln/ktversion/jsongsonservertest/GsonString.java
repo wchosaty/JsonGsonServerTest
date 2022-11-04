@@ -17,6 +17,9 @@ public class GsonString {
     public Order toGsonOrder(String gsonString) {
         return new Gson().fromJson(gsonString,Order.class);
     }
+    public String fromGsonBookArray(List<Book> list) {
+        return new Gson().toJson(list);
+    }
 
     public String fromGsonArray(List<String> list) {
         return new Gson().toJson(list);
